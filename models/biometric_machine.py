@@ -36,11 +36,11 @@ class BiometricMachine(models.Model):
             if (attendance):
                 for lattendance in attendance:
                     time_att = str(lattendance[2].date()) + ' ' + str(lattendance[2].time())
-                    atten_time1 = datetime.strptime(str(time_att), '%Y-%m-%d %H:%M:%S')
+                    atten_time1 = datetime.strptime(str(time_att), DTF)
                     atten_time = atten_time1 - timedelta(hours=5, minutes=30)
-                    atten_time = datetime.strftime(atten_time, '%Y-%m-%d %H:%M:%S')
-                    atten_time1 = datetime.strftime(atten_time1, '%Y-%m-%d %H:%M:%S')
-                    in_time = datetime.strptime(atten_time1, '%Y-%m-%d %H:%M:%S').time()
+                    atten_time = datetime.strftime(atten_time, DTF)
+                    atten_time1 = datetime.strftime(atten_time1, DTF)
+                    in_time = datetime.strptime(atten_time1, DTF).time()
 
                     time_new = str(in_time)
                     time_new = time_new.replace(":", ".", 1)
