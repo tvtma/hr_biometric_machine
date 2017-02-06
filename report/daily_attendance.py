@@ -1,4 +1,3 @@
-
 # -*- coding: utf-8 -*-
 ##############################################################################
 #
@@ -20,41 +19,71 @@
 #
 ##############################################################################
 
-from openerp import tools
-from openerp.osv import fields,osv
+from odoo import tools
+from odoo import models, fields, api
 
-class report_daily_attendance(osv.osv):
+class ReportDailyAttendance(models.Model):
     _name = "report.daily.attendance"
+    _description = "Daily Attendance Report"
+    _order = 'day desc'
     _auto = False
     
-    _columns = {
-        'name': fields.many2one('hr.employee','Employee'),
-        'day': fields.date('Date'),
-        'address_id' : fields.many2one('res.partner', 'Working Address'),
-        'category' : fields.char('category'),
-        'punch': fields.integer('Number of Punch'),
-        'in_punch' : fields.datetime('In Punch'),
-        'out_punch' : fields.datetime('Out Punch'),
-    }
-    _order = 'day desc'
-    def init(self, cr):
-        tools.drop_view_if_exists(cr, 'report_daily_attendance')
-        cr.execute("""
-            create or replace view report_daily_attendance as (
-                select 
-                    min(id) as id, 
-                    employee_id as name, 
-                    Count(day) as punch, 
-                    day as day,
-                    address_id as address_id,
-                    category as category,
-                    min(name) as in_punch ,
-                    case when min(name) != max(name) then max(name)  end as out_punch   
-                from 
-                    hr_attendance 
-                GROUP BY 
-                    employee_id,day,address_id,category
-            
+    name = fields.Many2one('hr.employee', 'Employee')
+    day = fields.Date('Date')
+    address_id = fields.Many2one('res.partner', 'Working Address')
+    category = fields.Char('category')
+    punch = fields.Integer('Number of Punch')
+    in_punch = fields.Datetime('In Punch')
+    out_punch = fields.Datetime('Out Punch')
+    
+    
+    def _select(self):
+        select_str = """
+            SELECT
+                min(l.id) as id, 
+                l.employee_id as name, 
+                Count(l.day) as punch, 
+                l.day as day,
+                l.address_id as address_id,
+                l.category as category,
+                min(l.name) as in_punch ,
+                case when min(l.name) != max(l.name) then max(l.name) end as out_punch
+        """
+        return select_str
+    
+    def _from(self):
+        from_str = """
+            FROM
+                hr_attendance AS l
+        """
+        return from_str
+    
+    def _join(self):
+        join_str = """
+        """
+        return join_str
+    
+    def _where(self):
+        where_str = """
+        """
+        return where_str
+    
+    def _group_by(self):
+        group_by_str = """
+            GROUP BY 
+                employee_id, day, address_id, category
+        """
+        return group_by_str
+    
+    @api.model_cr
+    def init(self):
+        tools.drop_view_if_exists(self.env.cr, self._table)
+        self.env.cr.execute("""CREATE or REPLACE VIEW %s as (
+            %s
+            %s
+            %s
+            %s
+            %s
             )
-        """)
-report_daily_attendance()
+        """ % (self._table, self._select(), self._from(), self._join(), self._where(), self._group_by()))
+        
