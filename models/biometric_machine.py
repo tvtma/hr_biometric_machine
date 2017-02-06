@@ -4,9 +4,9 @@ from odoo import models, fields, api, _
 from odoo.exceptions import ValidationError
 from odoo.tools import DEFAULT_SERVER_DATETIME_FORMAT as DTF
 from datetime import datetime, timedelta
-from ..python_zklib.zklib import zklib
+from zklib import zklib
 import time
-from ..python_zklib.zklib import zkconst
+from zklib import zkconst
 
 
 class BiometricMachine(models.Model):
